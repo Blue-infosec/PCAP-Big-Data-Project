@@ -30,6 +30,8 @@ public class Parser {
 	private ArrayList<String> list_of_packet_strings = new ArrayList<String>();
 	private ArrayList<JSONObject> list_of_packet_object = new ArrayList<JSONObject>();
 	
+	private String HDFS_file_path;
+	
 	public ArrayList<String> getListOfPacketStrings() {
 		return this.list_of_packet_strings;
 	}
@@ -93,8 +95,6 @@ public class Parser {
 				
 				String temp_json_string = builder.toString();
 				
-
-				
 				setJSON(temp_json_string);
 				
 				JSONParser json_parser = new JSONParser();
@@ -102,6 +102,8 @@ public class Parser {
 				JSONObject temp_JSON = (JSONObject) json_parser.parse(temp_json_string);
 				
 				temp_JSON.put("Http", obj);
+				
+				temp_JSON.put("Frame_Number", packet.getFrameNumber());
 				
 				//setJSONObj(temp_JSON);
 				
@@ -160,6 +162,8 @@ public class Parser {
 				if(!header.isEmpty()) obj.put(header_name, parseHeader(header));
 			}
 			
+			obj.put("HDFSfilepath", this.HDFS_file_path);
+			
 			this.setJSONObj(obj);
 			
 			new_JSON = obj.toJSONString();
@@ -215,7 +219,7 @@ public class Parser {
 		return header_obj;
 	}
 	
-	public void parse(String PCAP_file_path, Context user) {
+	public void parse(String PCAP_file_path, String HDFS_file_path, Context user) {
 		
 		StringBuilder err = new StringBuilder();
 		Pcap pcap = Pcap.openOffline(PCAP_file_path, err);
@@ -224,6 +228,8 @@ public class Parser {
 			System.err.printf("Error while opening device for capture: ");
 			return ;
 		}
+		
+		this.HDFS_file_path = HDFS_file_path;
 		
 		myPcapPacketHandler jpacketHandler = new myPcapPacketHandler();
 		

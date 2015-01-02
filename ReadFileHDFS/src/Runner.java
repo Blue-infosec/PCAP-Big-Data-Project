@@ -12,9 +12,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.elasticsearch.hadoop.mr.EsOutputFormat;
 
-import org.jnetpcap.Pcap;
-import org.jnetpcap.packet.PcapPacket;
-import org.jnetpcap.packet.PcapPacketHandler;
 
 public class Runner {
 
@@ -34,7 +31,7 @@ public class Runner {
  			// Prepare pcap reader
  			Parser parser = new Parser();
  			
- 			parser.parse(PCAP_file_path, context);
+ 			parser.parse(PCAP_file_path, filepath, context);
  			
 			
 		}
