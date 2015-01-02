@@ -27,14 +27,7 @@ public class Parser {
 	private String JSON;
 	private JSONObject resultant_JSON;
 	
-	private ArrayList<String> list_of_packet_strings = new ArrayList<String>();
-	private ArrayList<JSONObject> list_of_packet_object = new ArrayList<JSONObject>();
-	
 	private String HDFS_file_path;
-	
-	public ArrayList<String> getListOfPacketStrings() {
-		return this.list_of_packet_strings;
-	}
 	
 	public String getJSON () {
 		return this.JSON;
@@ -56,14 +49,6 @@ public class Parser {
 	
 	private void sethasHTTPHeader(boolean hasHTTPHeader) {
 		this.hasHTTPHeader = hasHTTPHeader;
-	}
-	
-	public void addPacketString(String JSON) {
-		list_of_packet_strings.add(JSON);
-	}
-	
-	public void addPacketJSON(JSONObject object) {
-		list_of_packet_object.add(object);
 	}
 	
 	public class myPcapPacketHandler implements PcapPacketHandler<Context>{
@@ -121,11 +106,6 @@ public class Parser {
 		}
 	}
 	
-	private void convertAllToDesiredFormat() {
-		for(JSONObject array : this.list_of_packet_object) {
-			this.addPacketString(convertToDesiredFormat(array));
-		}
-	}
 	
 	private String convertToDesiredFormat(JSONObject array) {
 		String new_JSON = "";
@@ -159,7 +139,7 @@ public class Parser {
 				
 				JSONObject header = (JSONObject) e.getValue();
 
-				if(!header.isEmpty()) obj.put(header_name, parseHeader(header));
+				if(!header.isEmpty() && header.get("info") != null && header.get("fields") != null) obj.put(header_name, parseHeader(header));
 			}
 			
 			obj.put("HDFSfilepath", this.HDFS_file_path);

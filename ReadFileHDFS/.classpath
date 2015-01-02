@@ -5,13 +5,13 @@
 	<classpathentry kind="lib" path="/usr/local/hadoop/share/hadoop/common/hadoop-common-2.6.0.jar"/>
 	<classpathentry kind="lib" path="/usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-core-2.6.0.jar"/>
 	<classpathentry kind="lib" path="/usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.6.0.jar"/>
-	<classpathentry kind="lib" path="/home/liutuo/workspace/ReadFileHDFS/commons-logging-1.2.jar"/>
-	<classpathentry kind="lib" path="/home/liutuo/Downloads/jnetpcap-1.3.0/jnetpcap.jar" sourcepath="/home/liutuo/Downloads/jnetpcap-src-1.3.0-1">
+	<classpathentry kind="lib" path="/home/puaykai/Downloads/jnetpcap-1.3.0/jnetpcap.jar" sourcepath="/home/liutuo/Downloads/jnetpcap-src-1.3.0-1">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/liutuo/Downloads/jnetpcap-1.3.0"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/puaykai/Downloads/jnetpcap-1.3.0"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="elasticsearch-hadoop-2.0.2.jar"/>
 	<classpathentry kind="lib" path="json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/home/puaykai/Downloads/commons-logging-1.2/commons-logging-1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
