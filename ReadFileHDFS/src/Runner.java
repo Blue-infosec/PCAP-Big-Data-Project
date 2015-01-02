@@ -1,81 +1,98 @@
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.elasticsearch.hadoop.mr.EsOutputFormat;
+
+import org.jnetpcap.Pcap;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.packet.PcapPacketHandler;
 
 public class Runner {
 
-	public static class MyMapper
-
-	extends Mapper<Object, Text, Text, IntWritable> {
-
+	public static class MyMapper extends Mapper<Object, Text, NullWritable, Text> {
 
 		public void map(Object key, Text value, Context context)
-
-		throws IOException, InterruptedException {
-
-			String filepath = value.toString();
+				throws IOException, InterruptedException {
 			
-			//Get path of the file
-			Path pt = new Path(filepath);
-			//Get BufferedReader
-			FileSystem fs = FileSystem.get(new Configuration());
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					fs.open(pt)));
-
-
+ 			String filepath = value.toString();
+ 
+ 			// Get HDFS path of the file
+ 			Path pt = new Path(filepath);
+ 			
+ 			// Get the local path of the file
+ 			String PCAP_file_path = makeFileFromPath(pt, new Configuration());
+ 			
+ 			// Prepare pcap reader
+ 			Parser parser = new Parser();
+ 			
+ 			parser.parse(PCAP_file_path, context);
+ 			
+			
 		}
 
+		/**
+		 * Copy the file to local file system
+		 * @param some_path
+		 * path of the file on HDFS system
+		 * @param conf
+		 * Hadoop configuration
+		 * @return 
+		 * path of the file on local file system
+		 * @throws IOException
+		 */
+		public String makeFileFromPath(Path some_path, Configuration conf)
+				throws IOException {
+			FileSystem fs = FileSystem.get(some_path.toUri(), conf);
+			File temp_data_file = File.createTempFile(some_path.getName(), "");
+			temp_data_file.deleteOnExit();
+			fs.copyToLocalFile(some_path,
+					new Path(temp_data_file.getAbsolutePath()));
+			return temp_data_file.getAbsolutePath();
+		}
 	}
 
-//	public static class MyReducer
-//
-//	extends Reducer<Text, IntWritable, Text, IntWritable> {
-//
-//		public void reduce(Text key, Iterable<IntWritable> values,
-//
-//		Context context
-//
-//		) throws IOException, InterruptedException {
-//
-//			for (IntWritable val : values) {
-//
-//				context.write(key, val);
-//
-//			}
-//
-//		}
-//
-//	}
 
 	public static void main(String[] args) throws Exception {
-
-		Configuration conf = new Configuration();
-
-		Job job = new Job(conf, "Whole file input format");
 		
+		//	Prepare configuration 
+		Configuration conf = new Configuration();
+		conf.set("es.input.json", "yes");
+		conf.setBoolean("mapred.map.tasks.speculative.execution", false);    
+		conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+		
+		// Set server address
+		conf.set("es.nodes", "192.168.10.132:9200");
+		
+		// Set index/type
+		conf.set("es.resource", "network/pcaps");
+		
+		//	Prepare the mapreduce job
+		Job job = new Job(conf);
+		
+		// Prepare the native library for jnetpcap
+		job.addCacheFile(new Path("/user/liutuo/libjnetpcap.so").toUri());
 		job.setInputFormatClass(WholeFileInputFormat.class);
 		job.setJarByClass(Runner.class);
-		conf.setBoolean("mapreduce.map.speculative", false);
 		job.setMapperClass(MyMapper.class);
-//		job.setReducerClass(MyReducer.class);
-		job.setOutputKeyClass(Text.class);
-
-		job.setOutputValueClass(IntWritable.class);
-
+		job.setOutputFormatClass(EsOutputFormat.class);
+		job.setOutputKeyClass(NullWritable.class);
+		job.setOutputValueClass(Text.class);
+		job.setNumReduceTasks(0);
+		
+		// Read arguments
 		FileInputFormat.addInputPath(job, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
-		
+
+		// Start the mapreduce job
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 
 	}
