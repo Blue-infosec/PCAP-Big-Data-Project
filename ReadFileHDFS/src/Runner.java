@@ -62,7 +62,10 @@ public class Runner {
 
 
 	public static void main(String[] args) throws Exception {
-		
+		if (args.length != 2) {
+            System.out.println("usage: [es-host:port] [input]");
+            System.exit(-1);
+        }
 		//	Prepare configuration 
 		Configuration conf = new Configuration();
 		conf.set("es.input.json", "yes");
@@ -70,7 +73,7 @@ public class Runner {
 		conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
 		
 		// Set server address
-		conf.set("es.nodes", "192.168.10.132:9200");
+		conf.set("es.nodes", args[0]);
 		
 		// Set index/type
 		conf.set("es.resource", "network/pcaps");
@@ -89,8 +92,16 @@ public class Runner {
 		job.setNumReduceTasks(0);
 		
 		// Read arguments
-		FileInputFormat.addInputPath(job, new Path(args[0]));
-		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		FileInputFormat.addInputPath(job, new Path(args[1]));
+		
+		/*Creating Filesystem object with the configuration*/
+		FileSystem fs = FileSystem.get(conf);
+		/*Check if output path (args[1])exist or not*/
+		if(fs.exists(new Path("tmp"))){
+		   /*If exist delete the output path*/
+		   fs.delete(new Path("tmp"),true);
+		}
+		FileOutputFormat.setOutputPath(job, new Path("tmp"));
 
 		// Start the mapreduce job
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
