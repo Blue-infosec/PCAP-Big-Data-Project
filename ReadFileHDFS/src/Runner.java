@@ -59,8 +59,8 @@ public class Runner {
 
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 2) {
-            System.out.println("usage: [es-host:port] [input]");
+		if (args.length != 3) {
+            System.out.println("usage: [es-host:port] [input] [native library path]");
             System.exit(-1);
         }
 		//	Prepare configuration 
@@ -79,7 +79,7 @@ public class Runner {
 		Job job = new Job(conf);
 		
 		// Prepare the native library for jnetpcap
-		job.addCacheFile(new Path("/user/liutuo/libjnetpcap.so").toUri());
+		job.addCacheFile(new Path(args[2]).toUri());
 		job.setInputFormatClass(WholeFileInputFormat.class);
 		job.setJarByClass(Runner.class);
 		job.setMapperClass(MyMapper.class);
